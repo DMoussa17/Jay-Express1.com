@@ -1,0 +1,132 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Annonce de produit mise en vente sur la marketplace JayExpress",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 4000 },
+        "price": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "categoryId": { "type": "string", "maxLength": 64 },
+        "condition": { "type": "string", "maxLength": 30 },
+        "stock": { "type": "number" },
+        "images": { "type": "array" },
+        "seller": { "type": "object" },
+        "isVip": { "type": "boolean" },
+        "vipDurationDays": { "type": "number" },
+        "vipExpiresAt": { "type": "string", "maxLength": 50 },
+        "paymentReference": { "type": "string", "maxLength": 128 },
+        "paymentAmount": { "type": "number" },
+        "paymentStatus": { "type": "string", "maxLength": 30 },
+        "waveTransactionRef": { "type": "string", "maxLength": 128 },
+        "validatedByAdminAt": { "type": "string", "maxLength": 50 },
+        "validatedByAdminEmail": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "maxLength": 30 },
+        "moderationStatus": { "type": "string", "maxLength": 30 },
+        "rejectionReason": { "type": "string", "maxLength": 500 },
+        "isDraft": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "title", "price", "categoryId", "seller", "status", "moderationStatus"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Commande d'achat sécurisée par escrow JayExpress",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "buyerId": { "type": "string", "maxLength": 128 },
+        "buyerName": { "type": "string", "maxLength": 128 },
+        "buyerPhone": { "type": "string", "maxLength": 50 },
+        "buyerAddress": { "type": "string", "maxLength": 300 },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "status": { "type": "string", "maxLength": 30 },
+        "paymentMethod": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "buyerId", "buyerName", "items", "total", "status", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Historique des règlements Wave / Orange Money / CB pour frais de parution ou VIP",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "reference": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "maxLength": 50 },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "status": { "type": "string", "maxLength": 30 },
+        "provider": { "type": "string", "maxLength": 50 },
+        "date": { "type": "string", "maxLength": 50 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 300 },
+        "transactionId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "reference", "type", "amount", "status", "date"]
+    },
+    "AdminSettings": {
+      "title": "AdminSettings",
+      "description": "Configuration globale de la modération, des validations et de la passerelle Wave",
+      "type": "object",
+      "properties": {
+        "postPaymentPolicy": { "type": "string", "maxLength": 20 },
+        "requireWaveTransactionRef": { "type": "boolean" },
+        "officialWaveMerchantNumber": { "type": "string", "maxLength": 30 },
+        "officialWaveAccountName": { "type": "string", "maxLength": 100 },
+        "highValueInspectionThreshold": { "type": "number" },
+        "notifySellerOnValidation": { "type": "boolean" },
+        "autoRefundOnRejection": { "type": "boolean" },
+        "allowSellerDirectCorrection": { "type": "boolean" }
+      },
+      "required": ["postPaymentPolicy", "officialWaveMerchantNumber"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Profil utilisateur persistant et rôles (Acheteur, Vendeur, Admin)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "city": { "type": "string", "maxLength": 100 },
+        "avatar": { "type": "string", "maxLength": 1000 },
+        "role": { "type": "string", "maxLength": 20 },
+        "isAdmin": { "type": "boolean" },
+        "isVerified": { "type": "boolean" },
+        "joinedDate": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Profils des utilisateurs authentifiés (Google ou identifiants)"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection racine contenant toutes les annonces de produits"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Commandes passées par les acheteurs"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Transactions financières de publication et de souscription VIP"
+    },
+    "/adminSettings/{settingId}": {
+      "schema": "AdminSettings",
+      "description": "Réglages de la console administrateur et de la modération"
+    }
+  }
+}

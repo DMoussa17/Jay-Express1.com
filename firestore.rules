@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function admin() {
+      return signedIn() && (
+        request.auth.token.email == 'kanemoussa1755@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+    function validId(id) { return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[A-Za-z0-9_-]+$'); }
+    function validProduct(d) {
+      return d.id is string && d.title is string && d.title.size() <= 200 &&
+        d.price is number && d.price >= 0 && d.categoryId is string &&
+        d.stock is number && d.stock >= 0 && d.status is string &&
+        d.moderationStatus is string && d.seller is map && d.seller.id is string;
+    }
+    function validOrder(d) {
+      return d.id is string && d.buyerId is string && d.buyerName is string &&
+        d.total is number && d.total >= 0 && d.status is string;
+    }
+    function validTx(d) {
+      return d.id is string && d.reference is string && d.amount is number &&
+        d.amount >= 0 && d.status is string && d.userId is string;
+    }
+
+    match /products/{productId} {
+      allow get: if validId(productId) && (
+        (resource.data.status == 'active' && resource.data.moderationStatus == 'approved') ||
+        (signedIn() && resource.data.seller.id == request.auth.uid) ||
+        admin()
+      );
+      allow list: if admin() || (resource.data.status == 'active' && resource.data.moderationStatus == 'approved');
+      allow create: if signedIn() && validId(productId) && validProduct(request.resource.data) && request.resource.data.seller.id == request.auth.uid;
+      allow update: if validId(productId) && (
+        admin() ||
+        (signedIn() && resource.data.seller.id == request.auth.uid && validProduct(request.resource.data) && request.resource.data.seller.id == request.auth.uid)
+      );
+      allow delete: if validId(productId) && (admin() || (signedIn() && resource.data.seller.id == request.auth.uid));
+    }
+
+    match /orders/{orderId} {
+      allow get: if validId(orderId) && (admin() || (signedIn() && resource.data.buyerId == request.auth.uid));
+      allow list: if admin();
+      allow create: if signedIn() && validId(orderId) && validOrder(request.resource.data) && request.resource.data.buyerId == request.auth.uid;
+      allow update, delete: if validId(orderId) && admin();
+    }
+
+    match /transactions/{transactionId} {
+      allow get, list: if admin();
+      allow create: if signedIn() && validId(transactionId) && validTx(request.resource.data) && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if admin();
+    }
+
+    match /adminSettings/{settingId} { allow read, write: if admin(); }
+    match /users/{userId} {
+      allow get: if signedIn() && (request.auth.uid == userId || admin());
+      allow list: if admin();
+      allow create, update: if signedIn() && (request.auth.uid == userId || admin());
+      allow delete: if admin();
+    }
+    match /admins/{userId} { allow read, write: if admin(); }
+    match /test/{docId} { allow read, write: if admin(); }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

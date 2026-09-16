@@ -1,0 +1,6 @@
+{
+  "name": "JayExpress",
+  "description": "Place de marché multi-catégories (électronique, mode, alimentation) avec transactions in-app, frais de publication variables par catégorie, options VIP défilantes et console administrateur.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
