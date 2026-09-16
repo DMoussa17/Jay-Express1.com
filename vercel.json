@@ -1,12 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite",
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs24.x"
-    }
-  },
+  "framework": "vite"
+},
   "rewrites": [
     { "source": "/((?!api/|assets/|icon.svg|manifest.webmanifest|sw.js).*)", "destination": "/index.html" }
   ],
